@@ -56,22 +56,25 @@ function disc_fit = runDISC(data, disc_input)
 %   parameters controls the sensivity of change-point detection.
 %   * Default = '0.05' (input_type = alpha_value)
 %
-% disc_fit.divisive = {String}. Information Criterion/objective function to use 
+% disc_fit.divisive_IC = {String}. Information Criterion/objective function to use 
 %   for divSegmentation. See computeIC for addtional options.
 %   * Default = 'BIC_GMM'
 %
-% disc_fit.agglomerative = {String}. Information Criterion/ objective function to
+% disc_fit.agglomerative_IC = {String}. Information Criterion/ objective function to
 %   use for aggCluster. See computeIC for addtional options.
 %   * Default = 'BIC_GMM'
 %
-% disc_fit.viterbi = Number of times to run the Viterbi algorithm.
-%   % Default = 2 (diminishing returns observed beyond 2)
+% disc_fit.viterbi_iter = Number of times to run the Viterbi algorithm.
+%   % Deault = 2 (diminishing returns observed beyond 2)
 %
 % disc_fit.return_k = return k states regardless of information_criterion
 %   result. If return_k_states > total states found by divSegment.m, the
 %   max value found will be returned.
 %   * Default return_k_states= 0 (Boolean check)
 % 
+%   Note: Currently return_k is not supported in DISCO. This feature will
+%   be added in future updates 
+%
 %
 % Output Variables:
 % -----------------
@@ -111,7 +114,7 @@ disc_fit.metrics = [];
 disc_fit.all_ideal = []; 
 
 % Check data
-if ~exist('data','var') || isempty(data)
+if ~exist('data','var') || isempty(data);
     disp('Error in runDISC: No data provided');
     return;
 end
@@ -125,10 +128,11 @@ end
 
 % Does disc_input exist? 
 if ~exist('disc_input','var')
-    disc_input = initDISC(); 
+    disc_input = struct; 
+    disc_input = setDefault(disc_input); 
 else
     % Check each field to ensure values are provided. 
-    disc_input = initDISC(disc_input); 
+    disc_input = setDefault(disc_input); 
 end
 
 % Check each field to ensure values are provided. 
@@ -141,7 +145,7 @@ disc_fit.parameters = disc_input;
 %% Step 1. Divisive Clustering 
 % Determine number of clusters and transitons between them 
 if ~strcmp(disc_input.divisive, 'none')
-    [data_fit,n_states] = divSegment(data, disc_input.input_type, disc_input.input_value, disc_input.divisive);
+    [data_fit,n_states] = divSegment(data, disc_input.input_type, disc_input.input_value, disc_input.divisive,disc_input.lambda);
 else
     % only perform change-point detection. Not recommended!
     [data_fit,n_states] = detectCPs(data, disc_input.input_type, disc_input.input_value);
@@ -159,23 +163,20 @@ if n_states > 1 && ~strcmp(disc_input.agglomerative, 'none')
     % Compute agglomerative_IC for each and take the best_fit number of
     % states
      normalize_values = 1; 
-     [disc_fit.metrics, best_fit] = computeIC(data, disc_fit.all_ideal, disc_input.agglomerative, normalize_values);
+     [disc_fit.metrics, best_fit] = computeIC(data, disc_fit.all_ideal,disc_input.agglomerative, normalize_values, disc_input.lambda);
      
      % store output of best_fit 
      data_fit = disc_fit.all_ideal(:,best_fit); 
-else
-     disc_fit.all_ideal = data_fit;% store in output
 end
 
 % Optional: force a best_fit to return_k_states
 if disc_input.return_k
-    return_k = disc_input.return_k;
     % Cannot return a number of states > total number of states found in
     % divSegment.m 
-    if return_k > n_states
-        return_k = n_states; 
+    if disc_input.return_k > n_states
+        disc_input.return_k = n_states;
     end
-    data_fit = disc_fit.all_ideal(:,return_k);
+    data_fit = disc_fit.all_ideal(:,disc_input.return_k);
 end
 
 %% Step 3. Viterbi Algorithm
@@ -184,6 +185,6 @@ if disc_input.viterbi > 0 && n_states > 1
 end
 
 %% Store Final Output
-[disc_fit.components, disc_fit.ideal, disc_fit.class] = computeCenters(data, data_fit);
+[disc_fit.components, disc_fit.ideal,disc_fit.class] = computeCenters(data, data_fit);
 
 end

@@ -1,4 +1,4 @@
-function [metrics,n_states] = computeIC(data, all_data_fits, information_criterion, normalize)
+function [metrics,n_states] = computeIC(data, all_data_fits, information_criterion, normalize, lambda)
 %% Compute model Information Criteria with a variety of options
 % David S. White
 % dwhite7@wisc.edu
@@ -48,24 +48,30 @@ function [metrics,n_states] = computeIC(data, all_data_fits, information_criteri
 
 %% Run computeIC
 % Check data
-if ~exist('data','var') || isempty(data)
+if ~exist('data','var') || isempty(data);
     disp('Error in computeIC: No data provided.');
     return;
 end
 % check all_data_fits
-if ~exist('all_data_fits','var') || isempty(all_data_fits)
+if ~exist('all_data_fits','var') || isempty(all_data_fits);
     disp('Error in computeIC: No all_data_fits provided.');
     return;
 end
 
 % check information_criterion
-if ~exist('information_criterion','var') || isempty(information_criterion)
-    information_criterion = 'BIC_GMM';
+if ~exist('information_criterion','var') || isempty(information_criterion);
+    information_criterion = 'BIC_GMM'; 
+    return;
 end
 
 % check normalize
-if ~exist('normalize','var') || isempty(normalize)
+if ~exist('normalize','var') || isempty(normalize);
     normalize = 1; 
+end
+
+% check lambda
+if ~exist('lambda','var') || isempty(lambda)
+    lambda = 1; 
 end
 
 % compute number of clusters
@@ -81,24 +87,27 @@ for k = 1:n_sequences
     switch information_criterion
         case {'BIC-GMM','BIC_GMM'}
             metric_type = 'min';
-            metrics(k) = gmmIC(data,all_data_fits(:,k),'BIC');
+            metrics(k) = gmmIC(data,all_data_fits(:,k),'BIC',lambda);
             
         case {'BIC-RSS','BIC_RSS'}
             metric_type = 'min';
-            metrics(k) = BIC_RSS(data,all_data_fits(:,k));
+            metrics(k) = BIC_RSS(data,all_data_fits(:,k),lambda);
             
         case {'AIC_GMM','AIC-GMM'}
             metric_type = 'min';
-            metrics(k) = gmmIC(data,all_data_fits(:,k),'AIC');
+            metrics(k) = gmmIC(data,all_data_fits(:,k),'AIC',lambda);
             
         case {'HQC_GMM','HQC-GMM'}
             metric_type = 'min';
-            metrics(k) = gmmIC(data,all_data_fits(:,k),'HQC');
+            metrics(k) = gmmIC(data,all_data_fits(:,k),'HQC', lambda);
             
         case 'MDL'
             metric_type = 'min';
-            metrics(k) = MDL(data,all_data_fits(:,k));
+            metrics(k) = MDL(data,all_data_fits(:,k), lambda);
             
+        case {'AIC_RSS', 'AIC-RSS'}
+            metric_type = 'min';
+            metrics(k) = AIC_RSS(data, all_data_fits(:,k), lambda);       
     end
 end
 

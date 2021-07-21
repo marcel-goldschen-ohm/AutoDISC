@@ -1,4 +1,4 @@
-function [MDL] = MDL(data,data_fit)
+function [MDL] = MDL(data,data_fit,lambda)
 %% MDL rewrite 
 % David S. White
 % dwhite7@wisc.edu
@@ -26,8 +26,8 @@ events = findEvents(data_fit);
 state_time = zeros(1,n_states); 
 % total time in each state 
 for k  = 1:n_states
-    state_idx = events(:,4) == states(k);     % position 4 = state labels
-    state_time(k) = sum(events(state_idx,3)); % position 3 = dwell times
+    state_idx = find(events(:,4) == states(k)); % position 4 = state labels
+    state_time(k) = sum(events(state_idx,3));   % position 3 = dwell times 
 end
 %cd  transition values ^2
 transitons = (events(1:end-1,4) - events(2:end,4)).^2;
@@ -44,7 +44,7 @@ G = n_states/2*log(1/2/pi) + n_states*log((max(data)-min(data))/sd) + (length(tr
 
 % 3. Compute MDL: 
 % ------------
-MDL = F+G;
+MDL = F+(G*lambda);
 
 end
 

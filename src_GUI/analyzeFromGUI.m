@@ -69,11 +69,11 @@ end
 
 % create BIC_GMM vs. BIC_RSS Decision Boundary label and
 % checkbox
-choicestr = sprintf("Automate Optimal Choice of\nBIC-RSS vs. BIC-GMM?");
+choicestr = sprintf("Automate Optimal Choice of\nBIC-RSS vs. AIC-GMM?");
 txt_decisionboundary = uicontrol(rpanel, 'Style','text', 'Position', [10 155 200 25],...
                                 'String', choicestr,'HorizontalAlignment', 'left');
 checkbox_decisionboundary = uicontrol(rpanel, 'Style', 'checkbox', 'Position', [10 135 80 20],...
-                                     'String', 'Automate', 'HorizontalAlignment', 'left',...
+                                     'String', 'AutoDISC', 'HorizontalAlignment', 'left',...
                                      'Callback', @checkbox_decisionboundary_callback);
 checkbox_decisionboundary.Value = 1;
 
@@ -224,8 +224,8 @@ uiwait(d);
     end
 
     function push_dbdefaults_callback(~,~) % called by pushing default button 
-        disc_input.dbslope = -0.74;
-        disc_input.dbintercept = 5.8;
+        disc_input.dbslope = -0.4877;
+        disc_input.dbintercept = 4.6939;
         edit_dbslope.String = num2str(disc_input.dbslope);
         edit_dbintercept.String = num2str(disc_input.dbintercept);
     end

@@ -1,4 +1,4 @@
-function [data_fit,n_states] = divSegment(data, input_type, input_value, information_criterion)
+function [data_fit,n_states] = divSegment(data, input_type, input_value, information_criterion,lambda);
 %% Divisive Segmentation
 % Author: David S. White
 % Contact: dwhite7@wisc.edu
@@ -65,24 +65,29 @@ function [data_fit,n_states] = divSegment(data, input_type, input_value, informa
 %% Check Input Variables:
 
 % Check data
-if ~exist('data','var') || isempty(data)
+if ~exist('data','var') || isempty(data);
     disp('Error in divSegment: No data provided.');
     return;
 end
 
 % Input Type
-if ~exist('input_type','var') || isempty(input_type)
+if ~exist('input_type','var') || isempty(input_type);
     input_type = 'critical_value';
 end
 
 % Input Value
-if ~exist('input_value','var') || isempty(input_value)
+if ~exist('input_value','var') || isempty(input_value);
     input_value = 1.96; % 95 % confidence interval (alpha_value = 0.05)
 end
 
 % Divisive Information Criterion
-if ~exist('information_criterion','var') || isempty(information_criterion)
-    information_criterion = 'BIC_RSS';
+if ~exist('divisive_IC','var') || isempty(divisive_IC);
+    divisive_IC = 'BIC_RSS';
+end
+
+% Lambda
+if ~exist('lambda','var') || isempty(lambda)
+    lambda = 1; % no penalty term scaling
 end
 
 %% run divSegment
@@ -145,7 +150,7 @@ while k <= length(centers)
         % split_centers = mean values of each cluser [2,1];
         % split_data_fit = assignment of data points into cluster 1 or 2 [N,1];
         [split_centers, split_data_fit] = ...
-            kmeansElkan(change_point_data_fit, center_guesses');
+            kmeansElkan(change_point_data_fit, center_guesses',1);
         
         % Optional: 
         % if running k-means without center guesses for finding 2 clusters:
@@ -155,7 +160,7 @@ while k <= length(centers)
         cluster_counts = accumarray(split_data_fit,1);
         
         % Were two clusters returned and both are larger than n_min?
-        if size(split_centers,1) == 2 && all(cluster_counts >= n_min)
+        if size(split_centers,1) == 2 & cluster_counts >= n_min
             
             % Reformat from split_data_fit values (1,2) to split_centers
             split_data_fit(split_data_fit == 1) = split_centers(1);
@@ -166,7 +171,7 @@ while k <= length(centers)
             % metric = information_criterion values
             % best_fit = best fit by the provided information_criterion
             compare_fits = [data_fit(k_index), split_data_fit];
-            [~,best_fit] = computeIC(data(k_index),compare_fits, information_criterion);
+            [~,best_fit] = computeIC(data(k_index),compare_fits,information_criterion,0,lambda);
             
             % Does the fit improve by splitting?
             if best_fit == 2
@@ -175,7 +180,7 @@ while k <= length(centers)
                 centers = unique(data_fit);          % update centers
                 
                 % force the first split?
-            elseif best_fit == 1 && k == 1 && force_split == 0 % iter 1
+            elseif best_fit == 1 && k == 1 && force_split == 0; % iter 1
                 force_split = 1;
                 data_fit(k_index) = split_data_fit;  % update data_fit
                 centers = unique(data_fit);          % update centers
@@ -194,7 +199,7 @@ while k <= length(centers)
 end
 n_states = length(centers);
 % check for forced split at iteration 1 and remove if needed
-if force_split == 1 && n_states == 2
+if force_split == 1 & n_states == 2
     data_fit(:) = mean(data);
     n_states = 1;
 end

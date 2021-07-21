@@ -1,4 +1,4 @@
-function ic_value = gmmIC(data, data_fit, information_criterion)
+function ic_value = gmmIC(data, data_fit, information_criterion,lambda)
 %% Compute AIC, BIC, or HQC from guassian mixture model 
 % Author: David S. White
 % Contact dwhite7@wisc.edu
@@ -15,7 +15,7 @@ function ic_value = gmmIC(data, data_fit, information_criterion)
 %   Akaike Information Criterion
 %       AIC = -2*ln(L) + 2k 
 %
-%   Bayesian Information Criterion
+%   Baysesian Information Criterion 
 %       BIC = -2*ln(L) + k * ln(N)
 %
 %   Hannan-Quinn Information Criterion
@@ -50,18 +50,23 @@ function ic_value = gmmIC(data, data_fit, information_criterion)
 %
 % Check arguments: sequence or components
 ic_value = []; % make sure there is an output 
-if ~exist('data','var')
+if ~exist('data','var'); 
     disp('Error in gmmIC: Need Data to Analyze'); 
-    return
+    return; 
 end
-if ~exist('information_criterion','var') || isempty(information_criterion)
+if ~exist('information_criterion','var') || isempty(information_criterion);
     disp('Error in gmmIC: Need an information criterion'); 
-    return
+    return; 
+end
+
+% check lambda
+if ~exist('lambda','var') || isempty(lambda)
+    lambda = 1; 
 end
 
 n_data = length(data);     
 [n_rows,n_columns] = size(data_fit); 
-if n_data == n_rows && n_columns == 1
+if n_data == n_rows & n_columns == 1
     % must have a provided idealized sequence. Compute Components 
     [components] = computeCenters(data,data_fit); 
 elseif n_data ~= n_rows && n_columns == 3
@@ -83,7 +88,7 @@ for i = 1:n_components
         ((data - components(i,2))./components(i,3)).^2) ./ (sqrt(2*pi) .* components(i,3));
 end
 P = sum(P,2);
-P = P(P ~= 0);            % avoid taking log of zero
+P = P(find(P ~= 0));            % avoid taking log of zero
 loglikelihood = sum(log(P));    
 
 degrees_of_freedom = 3 * n_components - 1; 
@@ -100,7 +105,7 @@ switch information_criterion
 end
 
 % compute ic_value 
-ic_value =  -2 * loglikelihood + degrees_of_freedom * penalty; 
+ic_value =  -2 * loglikelihood + degrees_of_freedom * penalty * lambda; 
 
 
 end

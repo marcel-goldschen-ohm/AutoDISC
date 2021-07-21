@@ -1,5 +1,5 @@
 function simulation = smSimulateBinding(duration_s, dt_s, n_sites, SNR, Q, ...
-    Emission_states, Intensities, Intensity_Variation)
+    Emission_states, Intensities, Intensity_Variation, symm)
 %% simulationulate Single Molecule Binding Time Series data from a Q matrix
 % Author: David S. White
 % contact: dwhite7@wisc.edu
@@ -101,7 +101,7 @@ n_states = length(states);
 events = findEvents(state_seq);
 
 same_value = 1;
-intensites = checkVariable(Intensities,n_states,same_value); % bound and unbound
+intensities = checkVariable(Intensities,n_states,same_value); % bound and unbound
 SNR = checkVariable(SNR,1);
 
 ideal_seq = zeros(duration_f,1);
@@ -109,9 +109,9 @@ ideal_seq_var = zeros(duration_f,1);
 zproj =  zeros(duration_f,1);
 
 % signal to noise ratio
-intensites_mu = mean(intensites(2:end));
+intensities_mu = mean(intensities(2:end));
 sigma = [];
-sigma(1) = intensites_mu / SNR;
+sigma(1) = intensities_mu / SNR;
 sigma(2) = sigma(1);
 
 for n = 1:size(events,1);
@@ -120,7 +120,7 @@ for n = 1:size(events,1);
     EventState = events(n,4);
     
     % Add ideal_seq
-    ideal_seq(event_start:event_stop) = sum(intensites(1:EventState));
+    ideal_seq(event_start:event_stop) = sum(intensities(1:EventState));
     
     % Add ideal_seq_var & zproj
     event_dur = event_stop-event_start;
@@ -138,11 +138,11 @@ for n = 1:size(events,1);
             else
                 modulation = 0;
             end
-            current_intensity_var = (intensites(k) * modulation +  intensites(k));
+            current_intensity_var = (intensities(k) * modulation +  intensities(k));
             itensity_var = itensity_var + current_intensity_var;
         else
-            % keep the baseline stable for simplicity
-            itensity_var = (intensites(k));
+            % keep the baseline stable for simulationplicity
+            itensity_var = (intensities(k));
         end
         
     end
@@ -151,8 +151,15 @@ end
 
 % Add noise
 intensities = unique(ideal_seq);
-sigma = (intensites(1)) / SNR;
-zproj = normrnd(ideal_seq_var, sigma);
+signal = intensities_mu;
+sigma = signal / SNR;
+% Asymmetric Noise
+if symm
+    zproj = normrnd(ideal_seq_var, sigma);
+else
+    zproj(ideal_seq == min(state_seq)) = normrnd(ideal_seq_var(ideal_seq == min(state_seq)), sigma);
+    zproj(ideal_seq ~= min(state_seq)) = normrnd(ideal_seq_var(ideal_seq ~= min(state_seq)), sigma*1.5);
+end
 
 % create components
 [components,ideal_seq] = computeCenters(zproj,state_seq);

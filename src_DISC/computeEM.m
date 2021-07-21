@@ -27,13 +27,13 @@ function emissions_matrix = computeEM(data,components)
 % Check input variables 
 
 % Check data
-if ~exist('data','var') || isempty(data)
+if ~exist('data','var') || isempty(data);
     disp('Error in computeEM: No data provided.');
     return;
 end
 
 % Check components
-if ~exist('components','var') || isempty(components)
+if ~exist('components','var') || isempty(components);
     disp('Error in computeEM: No components provided.');
     return;
 end
@@ -47,9 +47,9 @@ emissions_matrix = zeros(n_states, n_data_points);
 for k = 1:n_states
     mu = components(k,2);     % mean of the state
     std = components(k,3);    % standard deviation of the state
-    % evaluate all data points for the gaussian components of each state (normpdf)
+    % evalue all data points for the gaussian components of each state (normpdf)
     emissions_matrix(k,:) = exp(-0.5 * ((data-mu)./std).^2) ./ (sqrt(2*pi) .* std);
 end
-% normalize to sum to 1 per data point across each state
-emissions_matrix = emissions_matrix./ repmat(sum(emissions_matrix),[size(emissions_matrix,1) 1]); 
+% nomralize to sum to 1 per data point across each state
+emissions_matrix = emissions_matrix./ sum(emissions_matrix); 
 

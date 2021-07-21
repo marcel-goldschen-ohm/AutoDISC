@@ -28,11 +28,11 @@ function [components,mu_data_fit,state_data_fit] = computeCenters(data,data_fit)
 % state_data_fit = cluster assignment for datapoints using mean of cluster (i.e 100,200,300)
 
 % Check Input Varables 
-if ~exist('data','var') || isempty(data)
+if ~exist('data','var') | isempty(data)
     disp('Error in computeCenters: Need Data to Analyze'); 
     return; 
 end
-if ~exist('data_fit','var') || isempty(data_fit)
+if ~exist('data_fit','var') | isempty(data_fit)
     disp('Error in computeCenter: Need data_fit'); 
     return; 
 end
@@ -43,14 +43,13 @@ end
 
 % initalize 
 n_data_points = numel(data);
-labels = unique(data_fit); 
+labels = unique(data_fit) ;
 n_labels = length(labels); 
 mu_data_fit = zeros(n_data_points,1); 
 components = zeros(n_labels,3); % [weight, mu, sigma]
 
 % organize unique values in ascending order 
 [~,~,state_data_fit] = unique(data_fit);
-
 % compute all variables
 for k = 1:n_labels
     % find data points assigned to cluster == k
@@ -62,7 +61,7 @@ for k = 1:n_labels
     mu_data_fit(index) = mu;    % described by mean value
     components(k,1) = weight;   % Proportion of data in the cluster
     components(k,2) = mu;       % mean of the data in the cluster
-    components(k,3) = sigma + 1e-6; % avoid zero-valued standard deviations
+    components(k,3) = sigma + 1e-6; % avoid non-zero standard deviations
     
 end
     

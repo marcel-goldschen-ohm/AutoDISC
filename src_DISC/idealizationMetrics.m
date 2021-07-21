@@ -162,15 +162,10 @@ switch method
         % components for state values 
         obtained_components = computeCenters(data,data_fit);
         true_components = computeCenters(data,true_fit);
-        if any(true_components(:,3) == 0)
-            warning("Single Frame Level");
-        end
         
         % events
         true_events = findEvents(true_fit);
         obtained_events = findEvents(data_fit);
-        t_levels = unique(true_fit);
-        o_levels = unique(data_fit);
         
         t = 1;  % iterate true values
         o = 1;  % iterate obtained values 
@@ -180,6 +175,8 @@ switch method
             % begin code update...
             % error where t_event(4) is intensity level instead of state
             % index?
+            t_levels = unique(true_fit);
+            o_levels = unique(data_fit);
             t_event(4) = find(t_levels == t_event(4), 1);
             o_event(4) = find(o_levels == o_event(4), 1);
             % ... end code update
@@ -197,8 +194,6 @@ switch method
                 t = t + 1;
                 
             elseif t_event(2) == o_event(2)
-                % if we get here, we know that the start > event_threshold but
-                % don't know anything about state_threshold
                 FP = FP + 1;
                 FN = FN +1;
                 o = o + 1;

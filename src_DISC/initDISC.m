@@ -6,7 +6,7 @@ function disc_input = initDISC(disc_input)
 % --------
 % 2019-04-10    DSW     v1.1.0 DSW wrote the code 
 % 2021-01-26    AKB     Updated to make compatible with
-%                       runAutoOCDISC.m
+%                       runAutoDISC.m
 %
 % Overview: 
 % ---------
@@ -49,8 +49,8 @@ default.automate = 1;
 %
 % Decision Boundary Parameters:
 % -----------------------------
-default.dbslope = -0.74;
-default.dbintercept = 5.8;
+default.dbslope = -0.4877;
+default.dbintercept = 4.6939;
 % decision boundary with equation: 
 % log10(numsamples) = slope*SNR + intercept
 %
