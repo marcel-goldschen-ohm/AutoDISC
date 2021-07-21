@@ -4,6 +4,8 @@ Automated data-driven criterion selection for optimal idealization of single-mol
 
 An advancement on the original DISC algorithm is the automated choice of objective criterion based on properties of the input time series. To use this feature, simply check the automated selection box in the dialog that is presented upon clicking the Analyze button in the DISCO UI (see below). To use this feature from the command line, use the function runAutoDISC().
 
+User manual at https://github.com/marcel-goldschen-ohm/AutoDISC/blob/master/docs_AutoDISC/AutoDISC%20User%20Manual.pdf.
+
 # Divisive Segmentation and Clustering (DISC)
 
 ## Welcome to DISC! 
